@@ -155,6 +155,9 @@ def train(
                 # Should have been converted already to snips/number
                 continue
 
+            # Keep only unique values
+            values = set(values)
+
             print("---", file=dataset_file)
             print("type: entity", file=dataset_file)
             print("name:", quote(slot_name), file=dataset_file)
@@ -243,7 +246,7 @@ def recognize(
         entity = Entity(
             entity=slot_name,
             source=slot.get("entity", ""),
-            value=slot_value_dict,
+            value=slot_value,
             raw_value=slot.get("rawValue", slot_value),
             start=slot["range"]["start"],
             end=slot["range"]["end"],
@@ -268,14 +271,17 @@ def recognize(
 
             slot_graphs[slot_name] = slot_graph
 
+        entity.tokens = slot_value.split()
+        entity.raw_tokens = list(entity.tokens)
+
         if slot_graph:
             # Pass Snips value through graph
-            slot_tokens = slot_value.split()
-            slot_recognitions = rhasspynlu.recognize(slot_tokens, slot_graph)
+            slot_recognitions = rhasspynlu.recognize(entity.tokens, slot_graph)
             if slot_recognitions:
                 # Pull out substituted value and replace in Rhasspy entitiy
                 new_slot_value = slot_recognitions[0].text
-                entity.value["value"] = new_slot_value
+                entity.value = new_slot_value
+                entity.tokens = new_slot_value.split()
 
     return [recognition]
 
