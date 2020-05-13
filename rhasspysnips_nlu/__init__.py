@@ -87,6 +87,7 @@ def train(
             print("utterances:", file=dataset_file)
 
             # Get all paths through the graph (utterances)
+            used_utterances: typing.Set[str] = set()
             paths = nx.all_simple_paths(intent_graph, intent_node, end_node)
             for path in paths:
                 utterance = []
@@ -110,7 +111,10 @@ def train(
                                 entity_name = "snips/number"
                             elif not entity_name:
                                 # Collect actual value
-                                assert slot_name and slot_value, "No slot name or value"
+                                assert (
+                                    slot_name and slot_value
+                                ), f"No slot name or value (name={slot_name}, value={slot_value})"
+
                                 entity_name = slot_name
                                 slot_values = slots_dict.get(slot_name)
                                 if not slot_values:
@@ -132,15 +136,26 @@ def train(
 
                     if ilabel:
                         # Add to current slot/entity value
-                        if slot_name and not entity_name:
+                        if slot_name and (not entity_name):
                             slot_value += ilabel + " "
                         else:
                             # Add directly to utterance
                             utterance.append(ilabel)
+                    elif (
+                        olabel
+                        and (not olabel.startswith("__"))
+                        and slot_name
+                        and (not slot_value)
+                        and (not entity_name)
+                    ):
+                        slot_value += olabel + " "
 
                 if utterance:
-                    # Write utterance
-                    print("  -", quote(" ".join(utterance)), file=dataset_file)
+                    utterance_str = " ".join(utterance)
+                    if not utterance_str in used_utterances:
+                        # Write utterance
+                        print("  -", quote(utterance_str), file=dataset_file)
+                        used_utterances.add(utterance_str)
 
             print("", file=dataset_file)
 
