@@ -14,7 +14,7 @@ import networkx as nx
 import rhasspynlu
 from snips_nlu import SnipsNLUEngine
 
-from . import train, recognize
+from . import recognize, train
 
 _LOGGER = logging.getLogger("rhasspysnips_nlu")
 
@@ -166,10 +166,7 @@ def do_recognize(args: argparse.Namespace):
 
             start_time = time.perf_counter()
             recognitions = recognize(
-                text,
-                engine,
-                slots_dict=slots_dict,
-                slot_graphs=slot_graphs,
+                text, engine, slots_dict=slots_dict, slot_graphs=slot_graphs,
             )
             end_time = time.perf_counter()
 
@@ -191,6 +188,7 @@ def do_recognize(args: argparse.Namespace):
                     sentence_object[key] = value
 
             with jsonlines.Writer(sys.stdout) as out:
+                # pylint: disable=E1101
                 out.write(sentence_object)
 
             sys.stdout.flush()

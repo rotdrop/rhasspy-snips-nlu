@@ -152,7 +152,7 @@ def train(
 
                 if utterance:
                     utterance_str = " ".join(utterance)
-                    if not utterance_str in used_utterances:
+                    if utterance_str not in used_utterances:
                         # Write utterance
                         print("  -", quote(utterance_str), file=dataset_file)
                         used_utterances.add(utterance_str)
@@ -171,7 +171,7 @@ def train(
                 continue
 
             # Keep only unique values
-            values = set(values)
+            values_set = set(values)
 
             print("---", file=dataset_file)
             print("type: entity", file=dataset_file)
@@ -179,7 +179,11 @@ def train(
             print("values:", file=dataset_file)
 
             slot_graph = rhasspynlu.sentences_to_graph(
-                {slot_name: [rhasspynlu.jsgf.Sentence.parse(value) for value in values]}
+                {
+                    slot_name: [
+                        rhasspynlu.jsgf.Sentence.parse(value) for value in values_set
+                    ]
+                }
             )
 
             start_node, end_node = rhasspynlu.jsgf_graph.get_start_end_nodes(slot_graph)
