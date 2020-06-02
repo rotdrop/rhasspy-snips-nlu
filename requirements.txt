@@ -1,4 +1,4 @@
 jsonlines==1.2.0
 networkx==2.4
-rhasspy-nlu==0.1.8
+rhasspy-nlu==0.1.9
 snips-nlu==0.20.2
